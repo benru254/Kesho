@@ -1,0 +1,29 @@
+# --- dependencies & build output ---
+node_modules/
+.expo/
+dist/
+web-build/
+# generated native folders (if `expo prebuild` is ever run) — NOT modules/kesho-sms/android
+/app/android/
+/app/ios/
+*.apk
+*.aab
+*.log
+
+# --- PRIVATE: never commit (this repository is public) ---
+kesho-backup-*.json
+kesho-before-restore.json
+*.db
+*.db-wal
+*.db-shm
+*.jks
+*.keystore
+credentials.json
+google-services.json
+.env
+.env.*
+*.pem
+
+# --- system ---
+.DS_Store
+Thumbs.db

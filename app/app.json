@@ -1,0 +1,22 @@
+{
+  "expo": {
+    "name": "Kesho",
+    "slug": "kesho",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "backgroundColor": "#0B1220",
+    "android": {
+      "package": "com.kesho.app"
+    },
+    "plugins": [
+      "expo-sqlite",
+      [
+        "expo-notifications",
+        {
+          "color": "#F5B841"
+        }
+      ]
+    ]
+  }
+}

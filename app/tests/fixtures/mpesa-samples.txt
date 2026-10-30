@@ -1,0 +1,15 @@
+TX00000001 Confirmed. Ksh130.00 paid to JANE TEST SHOP. on 30/9/26 at 2:50 PM.New M-PESA balance is Ksh2.50. Transaction cost, Ksh0.00. Amount you can transact within the day is 499,800.00. See all your balances now https://example.test/a
+TX00000002 Confirmed. Your account balance was: M-PESA Account : Ksh132.50 M-PESA Pochi Account : Ksh2.00 on 30/9/26 at 2:47 PM. Transaction cost, Ksh0.00. Promo text https://example.test/b
+TX00000003 Confirmed.on 26/9/26 at 7:26 AMKsh1,050.00 received from 254700000001 CUSTOMER ONE TEST. New Account balance is Ksh1,044.23. Transaction cost, Ksh5.77.  Receiving payments of Ksh 500 & below in your Lipa na M-PESA till is now FREE!
+TX00000004 Confirmed. Ksh200.00 sent to KPLC PREPAID for account 11111111111 on 26/9/26 at 6:50 AM New M-PESA balance is Ksh3,250.35. Transaction cost, Ksh5.00.Amount you can transact within the day is 499,800.00. See all your balances now https://example.test/a
+TX00000005 Confirmed. Ksh55.00 sent to Test  Friend on 25/9/26 at 11:00 PM. New M-PESA balance is Ksh3,555.35. Transaction cost, Ksh0.00. Amount you can transact within the day is 498,305.00. See all your balances now https://example.test/a
+TX00000006 Confirmed. Ksh560.00 sent to test  person 0700000002 on 25/9/26 at 10:44 PM. New M-PESA balance is Ksh3,610.35. Transaction cost, Ksh13.00.  Amount you can transact within the day is 498,360.00. See all your balances now https://example.test/c
+Failed, you have entered the wrong PIN. If forgotten please dial *334#, select My Account, select M-PESA PIN Manager then M-PESA Forgot PIN and follow the prompts.
+TX00000008 Confirmed on 23/9/26 at 8:36 PM Ksh1,150.00 received from 400088-CO-OP TO TILL:TEST CUSTOMER TWO::AC00000000. New Account balance is Ksh13,886.50.
+TX00000009 Confirmed on 23/9/26 at 7:56 PM Ksh1,100.00 received from 721444-KOPOKOPO MERCHANT PAYMENTS:TEST PAYER-0000000000. New Account balance is Ksh11,791.72.
+TX00000010 Confirmed. on 8/5/26 at 11:41 AM Ksh1,000.00 received from  6600000 - TEST       PAYER. New Merchant Account Balance is Ksh2,041.53.
+TX00000011 Confirmed. You have received Ksh1,050.00 from TEST BANK LIMITED- APP on 8/5/26 at 12:30 PM. New M-PESA balance is Ksh1,504.35. Buy goods with M-PESA.
+TX00000012 confirmed. Ksh100.00 sent to AIRTEL MONEY  for account 254700000003 on 8/5/26 at 9:09 AM New M-PESA balance is Ksh454.35. Transaction cost, Ksh0.00.
+TX00000013 Confirmed. Ksh250.00 sent to Direct Pay Limited for account ATL0000000000 on 8/5/26 at 5:47 PM New M-PESA balance is Ksh782.35. Transaction cost, Ksh5.00.Amount you can transact within the day is 499,190.00. Save frequent paybills for quick payment on M-PESA app https://example.test/d
+TX00000014 Confirmed. Ksh100.00 paid to JANE TEST SHOP. on 25/9/26 at 11:13 PM.New M-PESA balance is Ksh3,455.35. Transaction cost, Ksh0.00. Amount you can transact within the day is 498,205.00. See all your balances now https://example.test/a
+TX00000015 Confirmed.on 24/9/26 at 8:13 PMKsh1,050.00 received from 254700000004 Test  Customer Three. New Account balance is Ksh6,365.09. Transaction cost, Ksh5.77.  Receiving payments of Ksh 500 & below in your Lipa na M-PESA till is now FREE!
