@@ -11,13 +11,15 @@ Design rule: built for the lazy, emotional Reuben — the productive Reuben does
 - [x] Update 01 — Installable APK (EAS)
 - [x] Update 02 — M-Pesa SMS auto-read (till = business, sorting, suggestions, fees, real balance)
 - [x] Update 03 — Backup/restore (Google Drive), weekly report, Settings tab, tests, docs, GitHub
+- [x] Update 04 — Kesho comes alive: living sky, My why, ONE thing, Pause, Focus, 24h wait list, milestones, celebrations, icon
 
 ## Next (suggested order)
 - [ ] Use Kesho daily for 2 weeks — real use decides what to fix
-- [ ] Kesho app icon + splash screen
-- [ ] Tapping a notification opens the right tab
 - [ ] Starting balance (money saved before Kesho) for pots
 - [ ] Income ideas tracker: list ways to grow income, track hours vs KES earned per source
+- [ ] Home-screen widget: today's sun + one thing (needs native Android widget code)
+- [ ] Pause from a notification shortcut (one tap from the lock screen)
+- [ ] Monthly "letter to future me" — written now, opened in 30 days
 
 ## Ideas parked (decide later)
 - Food tracking

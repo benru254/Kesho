@@ -30,5 +30,11 @@ const mon = buildPlan({ now: new Date(2026, 9, 25, 20, 0), todayKey: '2026-10-25
   today: { morningDone: true, moved: true, nightDone: true, active: true, mood: 4 } }).find((p) => p.at.getDay() === 1);
 check(/New week/.test(mon.body), 'Monday = fresh start message');
 
+const personal = buildPlan({ now, todayKey: '2026-10-21', times: DEFAULT_TIMES, why: 'I want my own space', tomorrowOne: 'Call the supplier',
+  today: { morningDone: true, moved: true, nightDone: true, active: true, mood: 4 } });
+check(/Call the supplier/.test(personal.find((p) => p.at.getDate() === 22 && p.slot === 'morning').body), 'tomorrow morning names your ONE thing');
+check(personal.some((p) => p.kind === 'back' && /my own space/.test(p.body)), 'a welcome-back message quotes your why');
+check(!b.some((p) => /You wrote/.test(p.body)), 'no why saved → no quote');
+
 check(JSON.stringify(shiftTime({ h: 23, m: 50, on: true }, 15)) === '{"h":0,"m":5,"on":true}', 'time wraps past midnight');
 done();

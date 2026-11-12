@@ -41,12 +41,9 @@ export async function finishNight(date, { stress, win_note }) {
   await logEvent('night_checkin', { date, stress });
 }
 
-// Returns { firstEver: bool } so the screen can celebrate.
 export async function setMoved(date, moved) {
-  const before = await get('SELECT COUNT(*) AS n FROM daily_log WHERE moved = 1');
   await saveDay(date, { moved: moved ? 1 : 0 });
   await logEvent(moved ? 'moved' : 'moved_undo', { date });
-  return { firstEver: moved && before.n === 0 };
 }
 
 export async function movedDaysThisWeek(today) {
@@ -60,8 +57,9 @@ export async function movedDaysThisWeek(today) {
 
 // ---------- Tasks ----------
 
+// The ONE thing first, then the order they were added.
 export async function getTasks(date) {
-  return all('SELECT * FROM tasks WHERE date = ? ORDER BY id', [date]);
+  return all('SELECT * FROM tasks WHERE date = ? ORDER BY is_one DESC, id', [date]);
 }
 
 export async function addTask(date, title) {
@@ -69,7 +67,9 @@ export async function addTask(date, title) {
   if (!clean) return;
   const count = await get('SELECT COUNT(*) AS n FROM tasks WHERE date = ?', [date]);
   if (count.n >= MAX_TASKS) return;
-  await run('INSERT INTO tasks (date, title, created_at) VALUES (?, ?, ?)', [date, clean, nowIso()]);
+  // The first task of a day becomes the ONE thing until you choose another.
+  const isOne = count.n === 0 ? 1 : 0;
+  await run('INSERT INTO tasks (date, title, is_one, created_at) VALUES (?, ?, ?, ?)', [date, clean, isOne, nowIso()]);
 }
 
 export async function toggleTask(id, done) {
@@ -85,6 +85,33 @@ export async function deleteTask(id) {
   await run('DELETE FROM tasks WHERE id = ?', [id]);
 }
 
+// Make this task the ONE thing of its day (only one per day).
+export async function setOne(id) {
+  const task = await get('SELECT date FROM tasks WHERE id = ?', [id]);
+  if (!task) return;
+  await run('UPDATE tasks SET is_one = 0 WHERE date = ?', [task.date]);
+  await run('UPDATE tasks SET is_one = 1 WHERE id = ?', [id]);
+}
+
+// "Tomorrow starts tonight": the one thing chosen in the night check-in.
+export async function getTomorrowOne(today) {
+  const row = await get('SELECT title FROM tasks WHERE date = ? AND is_one = 1', [addDays(today, 1)]);
+  return row ? row.title : null;
+}
+
+export async function setTomorrowOne(today, title) {
+  const clean = String(title || '').trim();
+  if (!clean) return;
+  const tomorrow = addDays(today, 1);
+  const existing = await get('SELECT id FROM tasks WHERE date = ? AND is_one = 1', [tomorrow]);
+  if (existing) {
+    await run('UPDATE tasks SET title = ? WHERE id = ?', [clean, existing.id]);
+  } else {
+    await run('INSERT INTO tasks (date, title, is_one, created_at) VALUES (?, ?, 1, ?)', [tomorrow, clean, nowIso()]);
+  }
+  await logEvent('tomorrow_planned', { date: tomorrow });
+}
+
 // Unfinished tasks from the most recent earlier day that were not carried yet.
 export async function getCarryOverCandidates(today) {
   const last = await get('SELECT MAX(date) AS d FROM tasks WHERE date < ?', [today]);
@@ -97,10 +124,13 @@ export async function getCarryOverCandidates(today) {
 }
 
 export async function carryOver(today, tasks) {
-  const existing = await get('SELECT COUNT(*) AS n FROM tasks WHERE date = ?', [today]);
+  const existing = await get('SELECT COUNT(*) AS n, COALESCE(SUM(is_one), 0) AS ones FROM tasks WHERE date = ?', [today]);
   const room = Math.max(0, MAX_TASKS - existing.n);
+  let hasOne = existing.ones > 0;
   for (const t of tasks.slice(0, room)) {
-    await run('INSERT INTO tasks (date, title, created_at) VALUES (?, ?, ?)', [today, t.title, nowIso()]);
+    const isOne = !hasOne && (t.is_one || existing.n === 0) ? 1 : 0;
+    if (isOne) hasOne = true;
+    await run('INSERT INTO tasks (date, title, is_one, created_at) VALUES (?, ?, ?, ?)', [today, t.title, isOne, nowIso()]);
   }
   for (const t of tasks) {
     await run('UPDATE tasks SET carried_to = ? WHERE id = ?', [today, t.id]);
@@ -113,45 +143,25 @@ export async function dismissCarryOver(tasks) {
   }
 }
 
-// ---------- Welcome message (no guilt, ever) ----------
+// ---------- Where you stand (never guilt) ----------
 
-export async function getWelcome(today) {
-  const total = await get('SELECT COUNT(*) AS n FROM daily_log WHERE morning_done_at IS NOT NULL OR night_done_at IS NOT NULL');
-  const last = await get(
-    'SELECT MAX(date) AS d FROM daily_log WHERE date < ? AND (morning_done_at IS NOT NULL OR night_done_at IS NOT NULL)',
-    [today]
-  );
-  const daysLogged = total.n;
+const SHOWED_UP = 'morning_done_at IS NOT NULL OR night_done_at IS NOT NULL OR moved = 1';
 
-  if (daysLogged === 0 && (!last || !last.d)) {
-    return { kind: 'first', text: 'Day one. Start small: one check-in is a win.', daysLogged };
-  }
-  if (last && last.d) {
-    const gap = daysBetween(last.d, today);
-    if (gap === 2) {
-      return { kind: 'nudge', text: 'You missed yesterday. That is normal. Just don’t miss twice — today counts.', daysLogged };
-    }
-    if (gap > 2) {
-      return { kind: 'back', text: `Welcome back. ${gap - 1} days away — no problem. Fresh start today.`, daysLogged };
-    }
-  }
-  return { kind: 'normal', text: `Day ${daysLogged + (await isTodayLogged(today) ? 0 : 1)} of showing up for yourself.`, daysLogged };
+// kind: 'first' (never used) · 'nudge' (missed exactly yesterday) · 'back' (away 2+ days) · 'normal'
+// dayNumber: which day of showing up today is (it never resets — missed days just don't count).
+export async function getDayContext(today) {
+  const before = await get(`SELECT COUNT(*) AS n, MAX(date) AS last FROM daily_log WHERE date < ? AND (${SHOWED_UP})`, [today]);
+  const dayNumber = before.n + 1;
+  if (before.n === 0) return { kind: 'first', gapDays: 0, dayNumber };
+  const gapDays = daysBetween(before.last, today);
+  if (gapDays === 2) return { kind: 'nudge', gapDays, dayNumber };
+  if (gapDays > 2) return { kind: 'back', gapDays, dayNumber };
+  return { kind: 'normal', gapDays, dayNumber };
 }
 
-async function isTodayLogged(today) {
-  const row = await getDay(today);
-  return !!(row && (row.morning_done_at || row.night_done_at));
-}
-
-// ---------- Energy note (you are unpredictable — the plan bends, it doesn't break) ----------
-
-export function energyNote(mood) {
-  if (mood == null) return null;
-  if (mood <= 2) {
-    return { kind: 'low', text: 'Low-energy day. The minimum: one task + close the day tonight. That counts as a full win.' };
-  }
-  if (mood === 5) {
-    return { kind: 'high', text: 'High energy today. Spend it on the hardest, most important thing first.' };
-  }
-  return null;
+// Small numbers shown under the sky. Reads (never writes) the Focus and Pause tables.
+export async function getTodayExtras(today) {
+  const focus = await get('SELECT COALESCE(SUM(actual_min), 0) AS n FROM focus_sessions WHERE date = ?', [today]);
+  const held = await get("SELECT COUNT(*) AS n FROM urges WHERE date = ? AND outcome = 'held'", [today]);
+  return { focusMin: focus.n, urgesHeld: held.n };
 }

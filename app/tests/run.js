@@ -48,6 +48,8 @@ for (const file of tests) {
         'expo-sqlite': path.join(STUBS, 'expo-sqlite.js'),
         'react-native': path.join(STUBS, 'react-native.js'),
         expo: path.join(STUBS, 'expo.js'),
+        'expo-notifications': path.join(STUBS, 'expo-notifications.js'),
+        'expo-haptics': path.join(STUBS, 'expo-haptics.js'),
       },
     });
   } catch (e) {

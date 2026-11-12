@@ -1,25 +1,21 @@
 // Shared button. variant 'primary' = gold, 'ghost' = outline. Colors come from core/theme.js.
+// Shrinks slightly and ticks when pressed (see Tappable).
 
 import React from 'react';
-import { Pressable, Text, StyleSheet } from 'react-native';
+import { Text, StyleSheet } from 'react-native';
+import Tappable from './Tappable';
 import { colors, space, radius } from '../core/theme';
 
-// variant: 'primary' (gold) | 'ghost' (outline)
 export default function Button({ label, onPress, disabled, variant = 'primary', style }) {
   const isPrimary = variant === 'primary';
   return (
-    <Pressable
-      onPress={disabled ? undefined : onPress}
-      style={({ pressed }) => [
-        styles.base,
-        isPrimary ? styles.primary : styles.ghost,
-        disabled && styles.disabled,
-        pressed && !disabled && styles.pressed,
-        style,
-      ]}
+    <Tappable
+      onPress={onPress}
+      disabled={disabled}
+      style={[styles.base, isPrimary ? styles.primary : styles.ghost, disabled && styles.disabled, style]}
     >
       <Text style={[styles.label, isPrimary ? styles.primaryText : styles.ghostText]}>{label}</Text>
-    </Pressable>
+    </Tappable>
   );
 }
 
@@ -33,7 +29,6 @@ const styles = StyleSheet.create({
   primary: { backgroundColor: colors.accent },
   ghost: { backgroundColor: 'transparent', borderWidth: 1, borderColor: colors.border },
   disabled: { opacity: 0.4 },
-  pressed: { opacity: 0.75 },
   label: { fontSize: 15, fontWeight: '700' },
   primaryText: { color: colors.accentText, backgroundColor: 'transparent' },
   ghostText: { color: colors.text, backgroundColor: 'transparent' },

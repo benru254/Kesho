@@ -6,6 +6,7 @@ import Card from '../../../ui/Card';
 import ChoiceRow from '../../../ui/ChoiceRow';
 import Button from '../../../ui/Button';
 import { colors, space } from '../../../core/theme';
+import { celebrate, oneOf } from '../../../core/celebrate';
 import { finishMorning } from '../today.service';
 
 const MOODS = [
@@ -43,8 +44,20 @@ export default function MorningCard({ date, day, onSaved }) {
   }
 
   const save = async () => {
+    const first = !done;
     await finishMorning(date, { mood, sleep_hours: hours, sleep_quality: quality });
     setEditing(false);
+    if (first) {
+      if (mood <= 2) {
+        celebrate({ emoji: '🤝', title: 'Thank you for being honest.', text: 'Low-energy day: the bar is lower today.' });
+      } else {
+        celebrate({
+          emoji: '☀️',
+          title: oneOf(['Checked in.', 'You showed up.', 'Day started.']),
+          text: oneOf(['The sun is rising.', 'That is the hardest part done.', 'Now: the one thing.']),
+        });
+      }
+    }
     onSaved();
   };
 

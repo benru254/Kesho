@@ -12,6 +12,7 @@ export async function initReport() {
     19,
     0,
     '📊 Your week in Kesho',
-    'Your Sunday report is ready: what worked, what didn’t, one focus for next week. 2 minutes.'
+    'Your Sunday report is ready: what worked, what didn’t, one focus for next week. 2 minutes.',
+    { tab: 'report' }
   );
 }

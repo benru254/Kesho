@@ -9,6 +9,7 @@ import Button from '../../ui/Button';
 import { colors, space, radius } from '../../core/theme';
 import { kes, parseAmount } from '../../core/format';
 import { dateKey, addDays } from '../../core/dates';
+import { celebrate } from '../../core/celebrate';
 import {
   addTx, withdrawFromPot, addSource, archiveSource, PAY_YOURSELF_RATE,
 } from './money.service';
@@ -97,6 +98,7 @@ export default function EntrySheet({ mode, visible, onClose, onSaved, sources, b
     if (payme) {
       await addTx({ date: payFirst.date, type: 'aside', amount: payFirst.amount, bucketId: payme.id, note: 'Paid myself first' });
       onSaved();
+      celebrate({ emoji: '💰', title: 'Paid yourself first.', text: `${kes(payFirst.amount)} is now working for future you.` });
     }
     onClose();
   };

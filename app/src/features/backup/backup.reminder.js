@@ -23,7 +23,7 @@ export async function planBackupReminder() {
   const body = age === null
     ? 'You have data in Kesho but no backup yet. 30 seconds: save it to Google Drive.'
     : `Your last backup is ${age} days old. 30 seconds: save a fresh one to Google Drive.`;
-  await scheduleAt(ID, at, '💾 Back up Kesho', body);
+  await scheduleAt(ID, at, '💾 Back up Kesho', body, { tab: 'settings' });
 }
 
 // Runs once at app start (from the feature registry).

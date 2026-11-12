@@ -1,7 +1,7 @@
 # Kesho — database
 
 One SQLite file on the phone: `kesho.db` (opened in `app/src/core/db/database.js`).
-Current schema version: **3** (see `app/src/core/db/migrations.js`).
+Current schema version: **4** (see `app/src/core/db/migrations.js`).
 
 ## Rules
 - Changes are **add-only**: new tables, new columns. Never drop, rename or reset.
@@ -26,6 +26,8 @@ Current schema version: **3** (see `app/src/core/db/migrations.js`).
 | `last_backup_at` | ISO time of the last backup |
 | `backup_banner_snooze` | ISO time until the backup banner stays hidden |
 | `reminders_last_sync` | ISO time reminders were last planned |
+| `profile` | `{ name, why, identity, trigger, plan, onboarded }` — your own words (core/profile.js) |
+| `focus_active` | the running focus session `{ id, taskId, title, plannedMin, startedAt }`, or null |
 
 ### `daily_log` — one row per day (Today tab)
 | column | meaning |
@@ -46,6 +48,7 @@ Current schema version: **3** (see `app/src/core/db/migrations.js`).
 | id, date, title | |
 | done, done_at | 0/1 and when |
 | carried_to | date it was brought to, or `dropped` |
+| is_one | 1 = THE ONE THING of that day (max one per day) |
 | created_at | |
 
 ### `events` — append-only activity log
@@ -83,6 +86,35 @@ Used to know "did Reuben show up today?" (reminders, weekly report).
 | ext_ref | M-Pesa code (unique) — fees use `CODE-FEE` |
 | created_at, deleted_at | soft delete |
 
+### `focus_sessions` — focus timer
+| column | meaning |
+|---|---|
+| date, task_id, title | what you focused on |
+| planned_min, actual_min | minutes chosen / minutes actually done (never more than planned) |
+| completed | 1 = ran to the end |
+| started_at, ended_at | ISO times |
+
+### `urges` — the Pause button
+| column | meaning |
+|---|---|
+| date | `YYYY-MM-DD` |
+| trigger_key | phone · spend · skip · anger · food · other |
+| outcome | `held` · `slipped` · NULL (not answered) |
+| created_at | ISO time |
+
+### `wishes` — 24-hour wait list
+| column | meaning |
+|---|---|
+| title, amount | the want and its price (0 = unknown) |
+| status | `waiting` · `dropped` (let go — money kept) · `bought` (recorded under Wants) |
+| created_at, unlock_at, decided_at | ISO times (unlock = created + 24 h) |
+
+### `milestones` — reached once, celebrated once
+| column | meaning |
+|---|---|
+| key | e.g. `days-30`, `held-5`, `focus-600`, `saved-10000`, `kept-5000` |
+| reached_at | ISO time |
+
 ### `mpesa_inbox` — every M-Pesa SMS read (waiting room)
 | column | meaning |
 |---|---|
@@ -104,8 +136,9 @@ Used to know "did Reuben show up today?" (reminders, weekly report).
 | 1 | core tables | settings, daily_log, tasks, events |
 | 2 | money | money_sources, money_buckets, money_tx (+ seeds) |
 | 3 | mpesa inbox | mpesa_inbox, "M-Pesa fees" bucket |
+| 4 | alive | tasks.is_one, focus_sessions, urges, wishes, milestones |
 
 ## Backups
-A backup (Settings → Backup) is a JSON file containing every table above — see
+A backup (Me → Backup) is a JSON file containing every table above — see
 `app/src/features/backup/backup.format.js` for the layout. Restore only touches tables present in the backup,
 ignores unknown columns, and refuses backups from a newer database version.

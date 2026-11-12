@@ -30,13 +30,17 @@ function byDate(rows) {
 // ---------- One day ----------
 
 // Collects everything known about each day into one simple record.
-// input: { keys, dailyLog, tasks, money, activeDates }
+// input: { keys, dailyLog, tasks, money, activeDates, focus, urges, wishes }
 //   dailyLog: rows of daily_log           tasks: rows of tasks
 //   money: [{ date, type, amount, bucket_key }]   activeDates: ['YYYY-MM-DD', ...] (any action that day)
-export function buildDays({ keys, dailyLog, tasks, money, activeDates }) {
+//   focus: [{ date, actual_min }]   urges: [{ date, outcome }]   wishes: [{ date, amount }] (wants let go)
+export function buildDays({ keys, dailyLog, tasks, money, activeDates, focus = [], urges = [], wishes = [] }) {
   const logMap = Object.fromEntries(dailyLog.map((d) => [d.date, d]));
   const taskMap = byDate(tasks);
   const moneyMap = byDate(money);
+  const focusMap = byDate(focus);
+  const urgeMap = byDate(urges);
+  const wishMap = byDate(wishes);
   const active = new Set(activeDates);
   return keys.map((date) => {
     const log = logMap[date] || {};
@@ -61,6 +65,10 @@ export function buildDays({ keys, dailyLog, tasks, money, activeDates }) {
       fees: sum((r) => r.type === 'out' && r.bucket_key === 'fees'),
       out: sum((r) => r.type === 'out'),
       aside: sum((r) => r.type === 'aside'),
+      focusMin: (focusMap[date] || []).reduce((a, r) => a + (r.actual_min || 0), 0),
+      urges: (urgeMap[date] || []).length,
+      urgesHeld: (urgeMap[date] || []).filter((u) => u.outcome === 'held').length,
+      kept: (wishMap[date] || []).reduce((a, r) => a + (r.amount || 0), 0),
     };
   });
 }
@@ -108,6 +116,10 @@ export function weekStats(days, todayKey) {
     fees: sum('fees'),
     out: sum('out'),
     aside: sum('aside'),
+    focusMin: sum('focusMin'),
+    urges: sum('urges'),
+    urgesHeld: sum('urgesHeld'),
+    kept: sum('kept'),
   };
 }
 
@@ -123,6 +135,7 @@ export function compareWeeks(cur, prev) {
     taskRate: diff('taskRate'),
     wants: diff('wants'),
     moneyIn: diff('moneyIn'),
+    focusMin: diff('focusMin'),
   };
 }
 
@@ -223,6 +236,9 @@ export function nextFocus(week) {
   }
   if (week.taskRate != null && week.tasksPlanned >= 5 && week.taskRate < 50) {
     return 'Plan fewer tasks: 1–2 a day, not 3. Finishing builds momentum; leftovers kill it.';
+  }
+  if (week.urges >= 3 && week.urgesHeld / week.urges < 0.5) {
+    return 'When the pull comes, press Pause BEFORE deciding. 60 seconds changes the decision.';
   }
   if (week.stressAvg != null && week.stressAvg >= 4) {
     return 'Heavy week. Block one evening with zero work — rest is part of the plan.';

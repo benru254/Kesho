@@ -22,4 +22,10 @@ Short records of choices that shape the app. If you want to change one, read the
 | 16 | **Add-only database migrations** | Phones keep months of data; an update must never wipe it. |
 | 17 | **Claude writes, Copilot applies, Reuben tests** | Reuben's time goes to testing and deciding, not typing code. Update docs keep a full history. |
 | 18 | **Public repo, fake test data only** | Code is fine to share; personal data (SMS, backups, money) never goes to GitHub. |
+| 20 | **Psychology first: your own words, if-then plans, one thing, urge Pause, 24h wait** | Willpower fails on emotional days; plans made in advance, in your own words, don't need it. Details: PSYCHOLOGY.md |
+| 21 | **Living sky instead of a progress bar or streak** | Progress you can *see* rising pulls you forward; a streak that breaks pushes people to quit. Stars count days shown up and never disappear. |
+| 22 | **Celebrations: small for wins, big only for milestones, each milestone once** | Rewards right after an action build habits; rewarding everything makes rewards meaningless. Old data never floods you. |
+| 23 | **Settings became the 🧭 Me tab** | Your why and journey belong with you, not hidden in settings. Tab key stays `settings` so older notifications still open it. |
+| 24 | **Icon/splash in app.config.js, not app.json** | app.json is edited by EAS on the PC (project id); keeping our changes in a separate file avoids merge conflicts. |
+| 25 | **No extra animation or chart libraries** | Plain React Native Animated + expo-linear-gradient keeps the APK small and the build reliable. |
 | 19 | **Expo SDK 54** | The version Copilot's working setup used; matches Expo Go on the Play Store at the time. Upgrade only on purpose. |

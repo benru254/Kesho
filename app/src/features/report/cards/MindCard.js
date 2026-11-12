@@ -1,8 +1,13 @@
-// Mood, stress and getting important things done.
+// Mood, stress, getting important things done, deep focus and urges faced.
 
 import React from 'react';
 import Card from '../../../ui/Card';
 import StatLine from './StatLine';
+
+function minutes(min) {
+  if (min < 60) return `${min} min`;
+  return `${Math.floor(min / 60)} h ${min % 60} min`;
+}
 
 export default function MindCard({ cur, diff }) {
   return (
@@ -15,6 +20,8 @@ export default function MindCard({ cur, diff }) {
         delta={diff.taskRate}
         unit="%"
       />
+      <StatLine label="Deep focus" value={minutes(cur.focusMin)} delta={diff.focusMin} unit="m" />
+      <StatLine label="Urges held" value={cur.urges > 0 ? `${cur.urgesHeld} of ${cur.urges}` : '–'} />
     </Card>
   );
 }

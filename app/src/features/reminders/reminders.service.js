@@ -6,7 +6,8 @@ import { AppState, Linking, Platform } from 'react-native';
 import { get } from '../../core/db/database';
 import { getSetting, setSetting } from '../../core/settings';
 import { on } from '../../core/bus';
-import { dateKey } from '../../core/dates';
+import { dateKey, addDays } from '../../core/dates';
+import { getProfile } from '../../core/profile';
 import { buildPlan, DEFAULT_TIMES } from './reminders.plan';
 
 const CHANNEL_ID = 'reminders';
@@ -115,8 +116,13 @@ async function readToday(todayKey) {
 export async function getPlan() {
   const now = new Date();
   const todayKey = dateKey(now);
-  const [times, today] = await Promise.all([getTimes(), readToday(todayKey)]);
-  return buildPlan({ now, todayKey, times, today });
+  const [times, today, profile, one] = await Promise.all([
+    getTimes(),
+    readToday(todayKey),
+    getProfile(),
+    get('SELECT title FROM tasks WHERE date = ? AND is_one = 1', [addDays(todayKey, 1)]),
+  ]);
+  return buildPlan({ now, todayKey, times, today, why: profile.why, tomorrowOne: one ? one.title : '' });
 }
 
 // Cancels Kesho's old reminders and schedules the fresh plan.
@@ -142,7 +148,7 @@ export async function syncReminders(force = false) {
     const p = plan[i];
     await Notifications.scheduleNotificationAsync({
       identifier: `${PLAN_PREFIX}${i}`,
-      content: { title: p.title, body: p.body, sound: true },
+      content: { title: p.title, body: p.body, sound: true, data: { tab: 'today' } },
       trigger: {
         type: Notifications.SchedulableTriggerInputTypes.DATE,
         date: p.at,

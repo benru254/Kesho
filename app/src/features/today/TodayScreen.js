@@ -1,13 +1,20 @@
-// The Today tab: greeting, no-guilt welcome banner, energy note, and the four daily cards
-// (morning check-in, important tasks, move, night check-in). Reloads when you come back to the app.
+// The Today tab — the heart of Kesho.
+// Top: the living sky (sun rises as you complete the day), your day number and Kesho's voice.
+// Below: the four daily cards (morning check-in, important tasks, move, night check-in).
 
 import React, { useCallback, useEffect, useState } from 'react';
 import { ScrollView, View, Text, StyleSheet, KeyboardAvoidingView, AppState } from 'react-native';
-import { colors, space, radius } from '../../core/theme';
-import { dateKey, prettyDate, greeting, isMonday, isFirstOfMonth } from '../../core/dates';
+import Sky from '../../ui/Sky';
+import { colors, space, radius, font, sky } from '../../core/theme';
+import { on } from '../../core/bus';
+import { getProfile } from '../../core/profile';
+import { dateKey, prettyDate, greeting } from '../../core/dates';
 import {
-  getDay, getTasks, getCarryOverCandidates, getWelcome, movedDaysThisWeek, energyNote,
+  getDay, getTasks, getCarryOverCandidates, getDayContext, movedDaysThisWeek,
+  getTodayExtras, getTomorrowOne, toggleTask,
 } from './today.service';
+import { dayProgress } from './today.progress';
+import { voiceLine } from './today.voice';
 import MorningCard from './cards/MorningCard';
 import TasksCard from './cards/TasksCard';
 import MoveCard from './cards/MoveCard';
@@ -20,52 +27,98 @@ export default function TodayScreen() {
   const load = useCallback(async () => {
     const today = dateKey();
     setDate(today);
-    const [day, tasks, carry, welcome, weekCount] = await Promise.all([
+    const [day, tasks, carry, context, weekCount, extras, tomorrowOne, profile] = await Promise.all([
       getDay(today),
       getTasks(today),
       getCarryOverCandidates(today),
-      getWelcome(today),
+      getDayContext(today),
       movedDaysThisWeek(today),
+      getTodayExtras(today),
+      getTomorrowOne(today),
+      getProfile(),
     ]);
-    setState({ day, tasks, carry, welcome, weekCount });
+    setState({ day, tasks, carry, context, weekCount, extras, tomorrowOne, profile });
   }, []);
 
   useEffect(() => {
     load();
-    // Reload when you come back to the app (new day = fresh screen).
+    // Reload when you come back to the app (new day = fresh sky).
     const sub = AppState.addEventListener('change', (s) => { if (s === 'active') load(); });
-    return () => sub.remove();
+    // A focus session ended: tick the task if you said it's finished, then refresh.
+    const offFocus = on('focus-finished', async ({ taskId, taskDone }) => {
+      if (taskId && taskDone) await toggleTask(taskId, true);
+      load();
+    });
+    const offPause = on('pause-closed', load);
+    const offProfile = on('profile-changed', load);
+    return () => { sub.remove(); offFocus(); offPause(); offProfile(); };
   }, [load]);
 
   if (!state) return <View style={styles.screen} />;
 
-  const freshStart = isFirstOfMonth(date)
-    ? 'New month. Clean slate.'
-    : isMonday(date) ? 'New week. Clean slate.' : null;
-
-  const energy = energyNote(state.day ? state.day.mood : null);
+  const { day, tasks, context, extras, profile } = state;
+  const hour = new Date().getHours();
+  const morningDone = !!(day && day.morning_done_at);
+  const nightDone = !!(day && day.night_done_at);
+  const one = tasks.find((t) => t.is_one) || null;
+  const progress = dayProgress({
+    morningDone,
+    nightDone,
+    moved: !!(day && day.moved),
+    tasksPlanned: tasks.length,
+    tasksDone: tasks.filter((t) => t.done).length,
+    mood: day ? day.mood : null,
+  });
+  const voice = voiceLine({
+    hour,
+    kind: context.kind,
+    gapDays: context.gapDays,
+    progress,
+    mood: day ? day.mood : null,
+    morningDone,
+    nightDone,
+    oneThing: one ? { title: one.title, done: !!one.done } : null,
+    tomorrowOne: state.tomorrowOne,
+    why: profile.why,
+    identity: profile.identity,
+    seed: date,
+  });
 
   return (
     <KeyboardAvoidingView style={styles.screen} behavior="padding">
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-        <Text style={styles.greet}>{greeting()}, Reuben</Text>
-        <Text style={styles.date}>{prettyDate(date)}</Text>
-
-        <View style={[styles.banner, state.welcome.kind === 'nudge' && styles.bannerNudge]}>
-          <Text style={styles.bannerText}>{freshStart ? `${freshStart} ` : ''}{state.welcome.text}</Text>
-        </View>
-
-        {energy && (
-          <View style={[styles.banner, energy.kind === 'low' ? styles.bannerLow : styles.bannerHigh]}>
-            <Text style={styles.bannerText}>{energy.text}</Text>
+        <Sky hour={hour} progress={progress} closed={nightDone} stars={context.dayNumber}>
+          <Text style={styles.greet}>{greeting(hour)},</Text>
+          <Text style={styles.name}>{profile.name || 'friend'}</Text>
+          <Text style={styles.date}>{prettyDate(date)}</Text>
+          <View style={styles.dayPill}>
+            <Text style={styles.dayPillText}>DAY {context.dayNumber}</Text>
           </View>
-        )}
+        </Sky>
 
-        {/* key={date} resets each card when the day changes */}
-        <MorningCard key={`m-${date}-${state.day?.morning_done_at}`} date={date} day={state.day} onSaved={load} />
-        <TasksCard date={date} tasks={state.tasks} carry={state.carry} onChanged={load} />
-        <MoveCard key={`mv-${date}`} date={date} day={state.day} weekCount={state.weekCount} onChanged={load} />
-        <NightCard key={`n-${date}-${state.day?.night_done_at}`} date={date} day={state.day} onSaved={load} />
+        <View style={styles.body}>
+          <View style={styles.voice}>
+            <Text style={styles.voiceText}>{voice}</Text>
+            <Text style={styles.voiceMeta}>
+              {Math.round(progress * 100)}% of today
+              {extras.focusMin > 0 ? `  ·  ${extras.focusMin} min focused` : ''}
+              {extras.urgesHeld > 0 ? `  ·  ${extras.urgesHeld} urge${extras.urgesHeld === 1 ? '' : 's'} held` : ''}
+            </Text>
+          </View>
+
+          {/* key = date resets each card when the day changes */}
+          <MorningCard key={`m-${date}-${day?.morning_done_at}`} date={date} day={day} onSaved={load} />
+          <TasksCard date={date} tasks={tasks} carry={state.carry} onChanged={load} />
+          <MoveCard key={`mv-${date}`} date={date} day={day} weekCount={state.weekCount} onChanged={load} />
+          <NightCard
+            key={`n-${date}-${day?.night_done_at}`}
+            date={date}
+            day={day}
+            dayNumber={context.dayNumber}
+            tomorrowOne={state.tomorrowOne}
+            onSaved={load}
+          />
+        </View>
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -73,19 +126,21 @@ export default function TodayScreen() {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.bg },
-  content: { padding: space.lg, paddingBottom: 80 },
-  greet: { color: colors.text, backgroundColor: 'transparent', fontSize: 24, fontWeight: '800' },
-  date: { color: colors.muted, backgroundColor: 'transparent', fontSize: 14, marginTop: 2, marginBottom: space.lg },
-  banner: {
-    backgroundColor: colors.cardAlt,
-    borderLeftWidth: 4,
-    borderLeftColor: colors.accent,
-    borderRadius: radius.md,
-    padding: space.md,
-    marginBottom: space.lg,
+  content: { paddingBottom: 80 },
+  body: { paddingHorizontal: space.lg },
+  greet: { color: sky.textSoft, backgroundColor: 'transparent', fontSize: font.md },
+  name: { color: sky.text, backgroundColor: 'transparent', fontSize: font.xxl, fontWeight: '900' },
+  date: { color: sky.textSoft, backgroundColor: 'transparent', fontSize: font.sm, marginTop: 2 },
+  dayPill: {
+    alignSelf: 'flex-start',
+    marginTop: space.md,
+    backgroundColor: 'rgba(255,255,255,0.16)',
+    borderRadius: radius.lg,
+    paddingVertical: 5,
+    paddingHorizontal: space.md,
   },
-  bannerNudge: { borderLeftColor: colors.warn },
-  bannerLow: { borderLeftColor: colors.muted },
-  bannerHigh: { borderLeftColor: colors.good },
-  bannerText: { color: colors.text, backgroundColor: 'transparent', fontSize: 14 },
+  dayPillText: { color: sky.text, backgroundColor: 'transparent', fontSize: font.xs, fontWeight: '900', letterSpacing: 1.5 },
+  voice: { marginTop: -space.sm, marginBottom: space.lg },
+  voiceText: { color: colors.text, backgroundColor: 'transparent', fontSize: font.lg, fontWeight: '600', lineHeight: 25 },
+  voiceMeta: { color: colors.accent, backgroundColor: 'transparent', fontSize: font.xs, fontWeight: '700', marginTop: space.sm, letterSpacing: 0.5 },
 });

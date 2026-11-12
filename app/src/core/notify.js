@@ -32,27 +32,28 @@ export async function cancel(identifier) {
 }
 
 // One notification at an exact date/time. Replaces any earlier one with the same identifier.
-export async function scheduleAt(identifier, date, title, body) {
+// data.tab = which tab opens when the notification is tapped (see shell/useNotificationTab.js).
+export async function scheduleAt(identifier, date, title, body, data = {}) {
   if (!(await notificationsAllowed())) return false;
   await ensureChannel();
   await cancel(identifier);
   if (date.getTime() <= Date.now() + 30 * 1000) return false;
   await Notifications.scheduleNotificationAsync({
     identifier,
-    content: { title, body, sound: true },
+    content: { title, body, sound: true, data },
     trigger: { type: Notifications.SchedulableTriggerInputTypes.DATE, date, channelId: CHANNEL_ID },
   });
   return true;
 }
 
 // Repeats every week. weekday: 1 = Sunday ... 7 = Saturday (Expo's numbering).
-export async function scheduleWeekly(identifier, weekday, hour, minute, title, body) {
+export async function scheduleWeekly(identifier, weekday, hour, minute, title, body, data = {}) {
   if (!(await notificationsAllowed())) return false;
   await ensureChannel();
   await cancel(identifier);
   await Notifications.scheduleNotificationAsync({
     identifier,
-    content: { title, body, sound: true },
+    content: { title, body, sound: true, data },
     trigger: {
       type: Notifications.SchedulableTriggerInputTypes.WEEKLY,
       weekday,

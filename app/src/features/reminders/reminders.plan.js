@@ -9,6 +9,8 @@
 // - After 1 missed day: "don't miss twice" morning message.
 // - After 2+ missed days: only ONE gentle "welcome back" a day (spam = you mute it).
 // - After a week away: one every 3 days, then silence after 30 days.
+// - Personal: tomorrow morning names the ONE thing you chose tonight; "welcome back"
+//   messages sometimes quote your own why.
 
 import { addDays, keyToDate, isMonday, isFirstOfMonth } from '../../core/dates';
 import { MESSAGES, TITLES, pick } from './reminders.messages';
@@ -29,20 +31,22 @@ const HORIZON_DAYS = 30;
 const DAILY_WELCOME_UNTIL = 7; // missed days 2–6: one a day
 const TAPER_EVERY = 3;         // missed days 7+: one every 3 days
 
-export function buildPlan({ now, todayKey, times, today }) {
+// why: your own words (core/profile). tomorrowOne: title of tomorrow's ONE thing, if chosen.
+export function buildPlan({ now, todayKey, times, today, why = '', tomorrowOne = '' }) {
   const items = [];
   const low = today.mood != null && today.mood <= 2;
+  const cut = (text, max) => (text.length <= max ? text : `${text.slice(0, max - 1).trimEnd()}…`);
 
   for (let d = 0; d <= HORIZON_DAYS; d++) {
     const key = addDays(todayKey, d);
 
-    const add = (slot, kind, list) => {
+    const add = (slot, kind, list, exactBody = null) => {
       const t = times[slot];
       if (!t || !t.on) return;
       const at = keyToDate(key);
       at.setHours(t.h, t.m, 0, 0);
       if (at.getTime() <= now.getTime() + 30 * 1000) return; // already passed
-      items.push({ at, slot, kind, title: TITLES[kind], body: pick(list, key + slot) });
+      items.push({ at, slot, kind, title: TITLES[kind], body: exactBody || pick(list, key + slot) });
     };
 
     if (d === 0) {
@@ -59,7 +63,10 @@ export function buildPlan({ now, todayKey, times, today }) {
       const morningList = isFirstOfMonth(key)
         ? MESSAGES.morningFreshMonth
         : isMonday(key) ? MESSAGES.morningFreshWeek : MESSAGES.morning;
-      add('morning', 'morning', morningList);
+      const oneBody = d === 1 && tomorrowOne
+        ? `Today’s one thing: “${cut(tomorrowOne, 60)}”. Check in, then start there.`
+        : null;
+      add('morning', 'morning', morningList, oneBody);
       add('move', 'move', MESSAGES.move);
       add('night', 'night', MESSAGES.night);
     } else if (missed === 1) {
@@ -68,7 +75,9 @@ export function buildPlan({ now, todayKey, times, today }) {
       add('night', 'night', MESSAGES.night);
     } else if (missed < DAILY_WELCOME_UNTIL || (missed - DAILY_WELCOME_UNTIL) % TAPER_EVERY === 0) {
       const slot = firstOnSlot(times);
-      if (slot) add(slot, 'back', MESSAGES.welcomeBack);
+      // Every second "welcome back" speaks in your own words.
+      const whyBody = why && missed % 2 === 0 ? `You wrote: “${cut(why, 90)}”. Still true? 30 seconds in Kesho.` : null;
+      if (slot) add(slot, 'back', MESSAGES.welcomeBack, whyBody);
     }
   }
 

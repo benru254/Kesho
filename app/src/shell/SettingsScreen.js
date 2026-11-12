@@ -1,4 +1,5 @@
-// The ⚙️ Settings tab: shows every feature's Section (from features/registry.js), one under another.
+// The 🧭 Me tab: shows every feature's Section (from features/registry.js), one under another —
+// your why and journey first, then settings (reminders, backup).
 // It knows nothing about the features themselves.
 
 import React from 'react';
@@ -8,7 +9,7 @@ import { colors, space } from '../core/theme';
 export default function SettingsScreen({ sections }) {
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
-      <Text style={styles.h1}>Settings</Text>
+      <Text style={styles.h1}>Me</Text>
       {sections.map(({ key, Section }) => (
         <View key={key} style={styles.section}>
           <Section />

@@ -20,7 +20,10 @@ const money = [
   { date: keys[2], type: 'out', amount: 13, bucket_key: 'fees' },
   { date: keys[3], type: 'aside', amount: 300, bucket_key: 'payme' },
 ];
-const days = buildDays({ keys, dailyLog, tasks, money, activeDates: [] });
+const focus = [{ date: keys[0], actual_min: 25 }, { date: keys[0], actual_min: 15 }, { date: keys[2], actual_min: 45 }];
+const urges = [{ date: keys[1], outcome: 'held' }, { date: keys[1], outcome: 'slipped' }, { date: keys[3], outcome: null }];
+const wishes = [{ date: keys[4], amount: 3500 }];
+const days = buildDays({ keys, dailyLog, tasks, money, activeDates: [], focus, urges, wishes });
 const w = weekStats(days, keys[6]);
 check(w.daysCounted === 7 && w.showedUp === 5, 'showed up 5 of 7');
 check(w.missedTwice === 1, 'Sat+Sun missed = 1× "missed twice"');
@@ -29,6 +32,9 @@ check(w.sleepAvg === 6.8 && w.sleepShort === 1, 'sleep average and short nights'
 check(w.moved === 2 && w.moodAvg === 3.6 && w.stressAvg === 2.4, 'move, mood, stress');
 check(w.tasksPlanned === 4 && w.tasksDone === 3 && w.taskRate === 75, 'tasks 3 of 4');
 check(w.moneyIn === 3000 && w.wants === 1200 && w.needs === 800 && w.fees === 13 && w.aside === 300, 'money totals');
+
+check(w.focusMin === 85 && w.urges === 3 && w.urgesHeld === 1 && w.kept === 3500, 'focus minutes, urges and money kept');
+check(/press Pause/.test(nextFocus({ ...w, moved: 5, wants: 0 })), 'many urges, few held → focus on the Pause button');
 
 const midweek = weekStats(days, keys[2]);
 check(midweek.daysCounted === 3 && midweek.missedTwice === 0, 'future days are never "missed"');

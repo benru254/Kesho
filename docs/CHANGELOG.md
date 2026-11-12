@@ -1,5 +1,29 @@
 # Kesho — changelog
 
+## Update 04 — Kesho comes alive
+**Psychology** (why: docs/PSYCHOLOGY.md)
+- **My why**: first-run questions (why · who I am becoming · what pulls me off track · my if-then plan). Your words come back in Pause, Focus, Today and reminders.
+- **THE ONE THING**: one gold task per day; night check-in plans **tomorrow's one thing**, and the morning reminder names it.
+- **⏸ Pause button** (middle of the tab bar): name the urge → 60 s breathing → your why → your plan → held / slipped, logged without shame.
+- **▶ Focus timer**: 15 / 25 / 45 min on any task; survives the app being closed; asks if the task is finished.
+- **24-hour wait list** (Money): park wants; "let it go" counts money kept; "buy it" records it under Wants.
+- **Milestones & My journey** (Me tab): lifetime totals that never reset; Day 7/30/100…, urges held, focus hours, KES saved, money kept — each celebrated once.
+
+**UI / UX / feeling**
+- **Living sky** on Today: real time-of-day colors; the sun rises as you complete the day; night + one star per day shown up.
+- **DAY N** counter (never resets) and **Kesho's voice** — one honest line that reacts to your mood, progress, absence and one thing.
+- Low-energy days get a lower bar: one task + close the day = full sun.
+- Haptics on every button; celebration toasts with confetti; full-screen milestone moments.
+- New tab bar with the round Pause button; Settings → **🧭 Me** tab.
+- Tapping a notification opens the right tab.
+- Sunrise **app icon**, adaptive icon and **splash screen** (`tools/make_icons.py`, `app/app.config.js`).
+
+**Report**: deep focus minutes, urges held, money kept by waiting; new focus rule for urges.
+
+**Tech**: database v4 (tasks.is_one, focus_sessions, urges, wishes, milestones) · new packages expo-haptics,
+expo-linear-gradient, expo-keep-awake, expo-splash-screen, expo-system-ui (SDK 54 versions) ·
+`modules/kesho-sms/android/build.gradle` now in the repo · tests: 10 files, 154 checks.
+
 ## Update 03 — Backup, weekly report, organized project, GitHub
 - **Backup & restore**: Settings → Backup → share to Google Drive; restore from a file; safety copy + "Undo the last restore";
   banner above every tab when the backup is 7+ days old; reminder notification at 19:30 when due.

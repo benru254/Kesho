@@ -1,4 +1,5 @@
-// The Money tab: quick In / Out / Aside buttons, M-Pesa sorting, goal, income, spending, pots, recent entries.
+// The Money tab: quick In / Out / Aside buttons, M-Pesa sorting, goal, income, spending,
+// the 24-hour wait list, pots, recent entries.
 // Reads new M-Pesa SMS every time it opens (installed app only).
 
 import React, { useCallback, useEffect, useState } from 'react';
@@ -15,6 +16,8 @@ import SpendCard from './cards/SpendCard';
 import PotsCard from './cards/PotsCard';
 import RecentCard from './cards/RecentCard';
 import MpesaCard from './cards/MpesaCard';
+import WishCard from './cards/WishCard';
+import { getWaiting, getKept } from './wish/wish.service';
 import { syncFromPhone, getMpesaState } from './mpesa/mpesa.service';
 
 const ACTIONS = [
@@ -31,12 +34,12 @@ export default function MoneyScreen() {
 
   const load = useCallback(async () => {
     const month = monthKey();
-    const [sources, buckets, summary, pots, recent, goal, mpesa] = await Promise.all([
+    const [sources, buckets, summary, pots, recent, goal, mpesa, wishes, kept] = await Promise.all([
       getSources(), getBuckets(), getMonthSummary(month), getPots(), getRecent(month), getGoal(),
-      getMpesaState(month),
+      getMpesaState(month), getWaiting(), getKept(),
     ]);
     const status = monthStatus(goal, month, summary.totalIn, new Date().getDate());
-    setData({ month, sources, buckets, summary, pots, recent, goal, status, mpesa });
+    setData({ month, sources, buckets, summary, pots, recent, goal, status, mpesa, wishes, kept });
   }, []);
 
   // Read new M-Pesa SMS (installed app only), then refresh the screen.
@@ -86,6 +89,7 @@ export default function MoneyScreen() {
         <GoalCard goal={data.goal} status={data.status} totalInLast={data.summary.totalInLast} onChanged={load} />
         <IncomeCard summary={data.summary} />
         <SpendCard summary={data.summary} />
+        <WishCard wishes={data.wishes} kept={data.kept} onChanged={load} />
         <PotsCard pots={data.pots} onWithdraw={() => setMode('withdraw')} />
         <RecentCard rows={data.recent} onChanged={load} />
       </ScrollView>

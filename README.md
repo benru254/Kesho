@@ -4,7 +4,9 @@
 **time, money and health** and move steadily toward his goals, **without living a miserable life**.
 
 It is built for real life, not for perfect days: it works offline for weeks, never guilt-trips,
-asks for about **2 minutes a day**, and tells the truth with numbers.
+asks for about **2 minutes a day**, and tells the truth with numbers. It is built for the lazy,
+emotional days — and it fights for you on them, using your own words.
+Why each feature works the way it does: [docs/PSYCHOLOGY.md](docs/PSYCHOLOGY.md)
 
 > Main goal tracked in the app: personal income **10,000 → 100,000 KES/month by January 2028**
 > (that means +16.6% every month), plus better sleep, regular movement and peace of mind.
@@ -15,10 +17,15 @@ asks for about **2 minutes a day**, and tells the truth with numbers.
 
 | Tab | What you get |
 |---|---|
-| ☀️ **Today** | 30-second morning check-in (mood, sleep) · pick 1–3 important tasks · "move 10 minutes" · night check-in (stress + one win) · no-guilt welcome after missed days · low-energy "minimum day" mode |
-| 💰 **Money** | Money in / out / put aside in seconds · **M-Pesa SMS read automatically** (shop till money kept separate as business) · income-goal path · income by source · needs vs wants · pots (emergency fund, pay yourself, invest) · "pay yourself first" 10% prompt |
-| 📊 **Report** | Weekly report (Mon–Sun): showing up, sleep, movement, mood, stress, tasks, money · change vs last week · patterns from the last 28 days · **one** focus for next week |
-| ⚙️ **Settings** | Reminders (times, on/off, test) · Backup to Google Drive · Restore / undo restore |
+| ☀️ **Today** | A **living sky**: follows the real time of day, the sun rises as you complete the day, one star per day you showed up · **DAY N** counter that never resets · Kesho's voice (one honest line that reacts to you) · morning check-in · **THE ONE THING** (gold) + up to 2 more tasks · ▶ **Focus timer** on any task · move 10 minutes · night check-in that plans **tomorrow's one thing** · low-energy days get a lower bar |
+| 💰 **Money** | Money in / out / put aside in seconds · **M-Pesa SMS read automatically** (shop till money kept separate as business) · income-goal path · income by source · needs vs wants · **24-hour wait list** for wants · pots (emergency fund, pay yourself, invest) · "pay yourself first" 10% prompt |
+| ⏸ **Pause** | The round button in the middle of the tab bar, for the moment a feeling is about to decide for you: name the pull → breathe 60 s → your own why → your if-then plan → held / slipped, no shame |
+| 📊 **Report** | Weekly report (Mon–Sun): showing up, sleep, movement, mood, stress, tasks, deep focus, urges held, money, money kept · change vs last week · patterns from the last 28 days · **one** focus for next week |
+| 🧭 **Me** | **My why** (your reason, who you are becoming, your trigger, your plan) · **My journey** (lifetime totals + milestones) · Reminders · Backup / restore |
+
+**Feels alive:** buttons give a light vibration, real wins get a toast + confetti, milestones (Day 7, 30, 100,
+first urge held, focus hours, KES saved…) get a full-screen moment — once each. Tapping a notification opens
+the right tab. A sunrise app icon and splash screen.
 
 **Reminders:** max 3 a day (morning, move, night), skipped when already done, gentler on low-mood days,
 fewer when you're away ("never miss twice"), plus a Sunday 19:00 report and a weekly backup reminder.
@@ -56,7 +63,7 @@ kesho/
     │   ├── App.js            ← app shell: database, tabs, banners
     │   ├── core/             ← shared foundation (database, dates, money format, theme, settings, events)
     │   ├── ui/               ← shared building blocks (Button, Card, ...)
-    │   ├── shell/            ← Settings tab container
+    │   ├── shell/            ← tab bar, Me tab container, notification → tab
     │   └── features/         ← one folder per feature + registry.js (the switchboard)
     ├── modules/kesho-sms/    ← native Android SMS reader
     └── tests/                ← automated tests (npm test)
@@ -99,7 +106,7 @@ If Android blocks the SMS permission ("Restricted setting"): Settings → Apps �
 ## Data & privacy
 
 - All data is in one SQLite file **on the phone**. Nothing is uploaded anywhere.
-- Backups are JSON files you save to **your own Google Drive** from Settings → Backup.
+- Backups are JSON files you save to **your own Google Drive** from Me → Backup.
 - Kesho reads only SMS from **MPESA**, only on the phone.
 - ⚠️ **This repository is public.** Never commit backups (`kesho-backup-*.json`), databases, real SMS,
   screenshots with money, keystores or passwords. `.gitignore` blocks the common ones — but check before pushing.
@@ -111,8 +118,8 @@ cd app
 npm test
 ```
 
-8 test files (89 checks): dates, reminder plan, goal math, money ledger, M-Pesa reader, M-Pesa import/sorting,
-weekly report, backup/restore — run on a real SQLite database. M-Pesa test data is **fake** (real formats, invented
+10 test files (154 checks): dates, reminder plan, goal math, money ledger, M-Pesa reader, M-Pesa import/sorting,
+weekly report, backup/restore, Today (sun, voice, ONE thing), focus, pause, wait list, milestones — run on a real SQLite database. M-Pesa test data is **fake** (real formats, invented
 names and numbers). Details: [docs/TESTING.md](docs/TESTING.md)
 
 ## How this project is built
@@ -128,6 +135,7 @@ Details: [docs/WORKFLOW.md](docs/WORKFLOW.md)
 | File | What's inside |
 |---|---|
 | [docs/STRUCTURE.md](docs/STRUCTURE.md) | Every folder and file, and the code rules |
+| [docs/PSYCHOLOGY.md](docs/PSYCHOLOGY.md) | The psychology behind every feature |
 | [docs/DATABASE.md](docs/DATABASE.md) | Every table and column, migrations |
 | [docs/DECISIONS.md](docs/DECISIONS.md) | Why things are the way they are |
 | [docs/TESTING.md](docs/TESTING.md) | Automated tests + phone test checklist |

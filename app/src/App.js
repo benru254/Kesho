@@ -1,8 +1,8 @@
-// THE APP SHELL — opens the database, starts every feature, draws the tab bar.
+// THE APP SHELL — opens the database, starts every feature, draws tabs, banners and overlays.
 // It reads features/registry.js and never needs to change when a feature is added or removed.
 
-import React, { useEffect, useMemo, useState } from 'react';
-import { View, Text, Pressable, StyleSheet, ActivityIndicator } from 'react-native';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { getDb } from './core/db/database';
@@ -10,8 +10,11 @@ import { on } from './core/bus';
 import { colors, space } from './core/theme';
 import { features } from './features/registry';
 import SettingsScreen from './shell/SettingsScreen';
+import TabBar from './shell/TabBar';
+import useNotificationTab from './shell/useNotificationTab';
 
-const SETTINGS_TAB = 'settings';
+// 'settings' is kept as the key so older notifications ({ tab: 'settings' }) still open it.
+const ME_TAB = 'settings';
 
 export default function App() {
   const [ready, setReady] = useState(false);
@@ -24,17 +27,13 @@ export default function App() {
     const list = features.filter((f) => f.Screen).map((f) => ({ key: f.key, title: f.title, icon: f.icon, Screen: f.Screen }));
     const sections = features.filter((f) => f.Section);
     if (sections.length > 0) {
-      list.push({
-        key: SETTINGS_TAB,
-        title: 'Settings',
-        icon: '⚙️',
-        Screen: () => <SettingsScreen sections={sections} />,
-      });
+      list.push({ key: ME_TAB, title: 'Me', icon: '🧭', Screen: () => <SettingsScreen sections={sections} /> });
     }
     return list;
   }, []);
-
   const banners = useMemo(() => features.filter((f) => f.Banner), []);
+  const overlays = useMemo(() => features.filter((f) => f.Overlay), []);
+  const actions = useMemo(() => features.filter((f) => f.action).map((f) => ({ key: f.key, ...f.action })), []);
 
   useEffect(() => {
     getDb()
@@ -48,6 +47,12 @@ export default function App() {
       .catch((e) => setError(String((e && e.message) || e)));
     return on('restored', () => setGeneration((g) => g + 1));
   }, []);
+
+  // Tapping a notification opens its tab.
+  const openTab = useCallback((key) => {
+    if (tabs.some((t) => t.key === key)) setActive(key);
+  }, [tabs]);
+  useNotificationTab(openTab);
 
   const current = tabs.find((t) => t.key === active) || tabs[0];
   const Screen = current.Screen;
@@ -71,19 +76,8 @@ export default function App() {
             <View style={styles.body}>
               <Screen />
             </View>
-            {tabs.length > 1 && (
-              <View style={styles.tabBar}>
-                {tabs.map((t) => {
-                  const on_ = t.key === current.key;
-                  return (
-                    <Pressable key={t.key} onPress={() => setActive(t.key)} style={styles.tab}>
-                      <Text style={styles.tabIcon}>{t.icon}</Text>
-                      <Text style={[styles.tabLabel, on_ && styles.tabLabelOn]}>{t.title}</Text>
-                    </Pressable>
-                  );
-                })}
-              </View>
-            )}
+            <TabBar tabs={tabs} actions={actions} activeKey={current.key} onSelect={setActive} />
+            {overlays.map(({ key, Overlay }) => <Overlay key={key} />)}
           </View>
         )}
       </SafeAreaView>
@@ -97,9 +91,4 @@ const styles = StyleSheet.create({
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: space.xl, backgroundColor: colors.bg },
   errorTitle: { color: colors.warn, backgroundColor: 'transparent', fontSize: 17, fontWeight: '700', marginBottom: space.sm },
   errorText: { color: colors.muted, backgroundColor: 'transparent', fontSize: 13, textAlign: 'center' },
-  tabBar: { flexDirection: 'row', backgroundColor: colors.card, borderTopWidth: 1, borderTopColor: colors.border },
-  tab: { flex: 1, alignItems: 'center', paddingVertical: space.sm },
-  tabIcon: { fontSize: 20, color: colors.text, backgroundColor: 'transparent' },
-  tabLabel: { fontSize: 12, color: colors.muted, backgroundColor: 'transparent', marginTop: 2 },
-  tabLabelOn: { color: colors.accent, fontWeight: '700' },
 });

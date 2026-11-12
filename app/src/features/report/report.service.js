@@ -1,4 +1,4 @@
-// Report data: reads (never writes) the tables of Today and Money, then hands them to report.calc.js.
+// Report data: reads (never writes) the tables of Today, Money, Focus and Pause, then hands them to report.calc.js.
 
 import { all } from '../../core/db/database';
 import { dateKey, addDays, weekDays, keyToDate, startOfWeek } from '../../core/dates';
@@ -22,8 +22,14 @@ async function loadRange(fromKey, toKey) {
     ),
     all('SELECT created_at FROM events WHERE created_at >= ? AND created_at < ?', [fromIso, toIso]),
   ]);
+  const [focus, urges, dropped] = await Promise.all([
+    all('SELECT date, actual_min FROM focus_sessions WHERE date BETWEEN ? AND ?', [fromKey, toKey]),
+    all('SELECT date, outcome FROM urges WHERE date BETWEEN ? AND ?', [fromKey, toKey]),
+    all("SELECT decided_at, amount FROM wishes WHERE status = 'dropped' AND decided_at >= ? AND decided_at < ?", [fromIso, toIso]),
+  ]);
   const activeDates = events.map((e) => dateKey(new Date(e.created_at)));
-  return { dailyLog, tasks, money, activeDates };
+  const wishes = dropped.map((w) => ({ date: dateKey(new Date(w.decided_at)), amount: w.amount }));
+  return { dailyLog, tasks, money, activeDates, focus, urges, wishes };
 }
 
 // Which week to open by default: this week — except on Monday, when last week is the useful one.

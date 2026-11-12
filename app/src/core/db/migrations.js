@@ -147,9 +147,57 @@ export const migrations = [
       );
     },
   },
-  // Next change goes here as version 4. Pattern for adding a column:
-  // { version: 4, name: '...', up: async (db) => { await ensureColumn(db, 'money_tx', 'tag', 'TEXT'); } },
-];
+  {
+    version: 4,
+    name: 'alive: one thing, focus, pause, wait list, milestones',
+    up: async (db) => {
+      // The ONE thing: the task that makes the day count (chosen the night before).
+      await ensureColumn(db, 'tasks', 'is_one', 'INTEGER DEFAULT 0');
+      await db.execAsync(`
+        -- Focus timer sessions (deep work on one task)
+        CREATE TABLE IF NOT EXISTS focus_sessions (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          date TEXT NOT NULL,
+          task_id INTEGER,
+          title TEXT,
+          planned_min INTEGER NOT NULL,
+          actual_min INTEGER DEFAULT 0,
+          completed INTEGER DEFAULT 0,
+          started_at TEXT NOT NULL,
+          ended_at TEXT
+        );
+        CREATE INDEX IF NOT EXISTS idx_focus_date ON focus_sessions(date);
 
-export const _ensureColumn = ensureColumn;
+        -- Pause button: every urge faced. outcome: 'held' | 'slipped' | NULL (not answered)
+        CREATE TABLE IF NOT EXISTS urges (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          date TEXT NOT NULL,
+          trigger_key TEXT NOT NULL,
+          outcome TEXT,
+          created_at TEXT NOT NULL
+        );
+        CREATE INDEX IF NOT EXISTS idx_urges_date ON urges(date);
+
+        -- 24-hour wait list for wants. status: 'waiting' | 'dropped' | 'bought'
+        CREATE TABLE IF NOT EXISTS wishes (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          title TEXT NOT NULL,
+          amount INTEGER DEFAULT 0,
+          status TEXT NOT NULL DEFAULT 'waiting',
+          created_at TEXT NOT NULL,
+          unlock_at TEXT NOT NULL,
+          decided_at TEXT
+        );
+
+        -- Milestones already reached (so each is celebrated once)
+        CREATE TABLE IF NOT EXISTS milestones (
+          key TEXT PRIMARY KEY,
+          reached_at TEXT NOT NULL
+        );
+      `);
+    },
+  },
+  // Next change goes here as version 5. Pattern for adding a column:
+  // { version: 5, name: '...', up: async (db) => { await ensureColumn(db, 'money_tx', 'tag', 'TEXT'); } },
+];
 

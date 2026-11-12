@@ -16,6 +16,7 @@ export default function MoneyWeekCard({ cur, diff }) {
       <StatLine label="Wants" value={kes(cur.wants)} delta={diff.wants} better="down" />
       <StatLine label="M-Pesa fees" value={kes(cur.fees)} better="down" />
       <StatLine label="Put aside" value={kes(cur.aside)} />
+      {cur.kept > 0 && <StatLine label="Kept by waiting 24h" value={kes(cur.kept)} />}
       {share != null && share >= 30 && (
         <Text style={styles.warn}>Wants were {share}% of spending. Under 20% is where savings start.</Text>
       )}

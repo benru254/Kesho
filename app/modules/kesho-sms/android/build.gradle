@@ -1,0 +1,16 @@
+// Build file for Kesho's local SMS-reader module (standard Expo module layout, SDK 54).
+plugins {
+  id 'com.android.library'
+  id 'expo-module-gradle-plugin'
+}
+
+group = 'expo.modules.keshosms'
+version = '1.0.0'
+
+android {
+  namespace "expo.modules.keshosms"
+  defaultConfig {
+    versionCode 1
+    versionName "1.0.0"
+  }
+}
