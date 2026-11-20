@@ -1,5 +1,13 @@
 # Kesho — changelog
 
+## Update 05 — Download and update from GitHub (like Njia)
+- `.github/workflows/build-apk.yml`: every push to `main` runs the tests, builds the APK and publishes **Kesho 1.0.N** under Releases.
+- Version `1.0.N` / versionCode N from the GitHub build number, so each APK installs over the last one (data kept).
+- **In-app updates**: Kesho checks GitHub (when online, max every 12 h). A green strip "✨ Kesho 1.0.N is ready → Get it",
+  and **Me → Updates** (installed version, Check for updates, Download).
+- New package: expo-application (SDK 54 version). Tests: 11 files, 168 checks.
+- EAS no longer used for builds. One-time switch for an EAS-installed Kesho: back up → uninstall → install → restore.
+
 ## Update 04 — Kesho comes alive
 **Psychology** (why: docs/PSYCHOLOGY.md)
 - **My why**: first-run questions (why · who I am becoming · what pulls me off track · my if-then plan). Your words come back in Pause, Focus, Today and reminders.

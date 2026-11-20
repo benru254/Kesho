@@ -47,7 +47,8 @@ fewer when you're away ("never miss twice"), plus a Sunday 19:00 report and a we
 - **expo-notifications** — local reminders (no server, no push)
 - **expo-file-system / expo-sharing / expo-document-picker** — backup & restore via Google Drive
 - **Local native module** `app/modules/kesho-sms` (Kotlin) — reads M-Pesa SMS (Android only)
-- **EAS Build** — builds the installable APK in Expo's cloud
+- **GitHub Actions** — builds the installable APK on every push and publishes it under Releases
+- **expo-application** — the app knows its own version, to offer updates
 
 No backend server. No accounts. No analytics.
 
@@ -73,6 +74,21 @@ Full map with every file: [docs/STRUCTURE.md](docs/STRUCTURE.md)
 
 ---
 
+## Install on your phone
+
+1. On the phone, open **https://github.com/benru254/Kesho/releases/latest**.
+2. Tap the file ending in **`.apk`** (e.g. `kesho-1.0.5.apk`) to download it.
+3. Open the downloaded file. Android asks once to "allow installs from this source" — allow it, then tap **Install**.
+4. Open **Kesho**. Answer the 4 "My why" questions (or skip).
+
+> Google Play Protect may warn "unknown developer" (and again because Kesho can read SMS). That is expected: this is
+> your own app, not from the Play Store. Choose **More details → Install anyway**.
+>
+> 
+**Had a Kesho built with EAS before?** That one was signed with a different key, so Android will refuse to install
+the GitHub version over it. One time only: **Me → Backup → Back up to Google Drive**, uninstall the old Kesho,
+install the GitHub one, then **Me → Backup → Restore from a backup file**. After that, every update installs over the top.
+
 ## Getting started (Windows, development)
 
 Requirements: **Node.js 22 LTS**, Git, an Android phone, an [Expo](https://expo.dev) account.
@@ -88,20 +104,17 @@ npx expo start --lan     # scan the QR code with Expo Go on the phone (same Wi-F
 **Expo Go limits:** M-Pesa SMS reading and some notification features only work in the installed APK.
 Expo Go is for quick testing of screens.
 
-## Build and install the APK
+## Updating
 
-```powershell
-cd app
-npm install -g eas-cli
-eas login
-eas build -p android --profile preview
-```
+Every time new code reaches GitHub, GitHub builds a new APK by itself (about 15 minutes) and publishes it
+under **Releases**. Kesho checks for it when you have internet (at most every 12 hours):
 
-Open the build link **on the phone**, download the APK and install it (allow "Install unknown apps").
-Updates are installed over the old app — data stays, as long as the same EAS keystore is used
-(EAS keeps it; never create a new one).
+- a green strip appears at the top: **✨ Kesho 1.0.N is ready → Get it**, or
+- **Me → Updates → Check for updates**.
 
-If Android blocks the SMS permission ("Restricted setting"): Settings → Apps → Kesho → ⋮ → **Allow restricted settings**.
+Tap it, let the file download, open it, tap **Install**. It replaces the old Kesho and **keeps all your data**.
+
+Build history: GitHub → **Actions** → *Build Android APK* (a green tick = the APK was published).
 
 ## Data & privacy
 
@@ -118,14 +131,15 @@ cd app
 npm test
 ```
 
-10 test files (154 checks): dates, reminder plan, goal math, money ledger, M-Pesa reader, M-Pesa import/sorting,
-weekly report, backup/restore, Today (sun, voice, ONE thing), focus, pause, wait list, milestones — run on a real SQLite database. M-Pesa test data is **fake** (real formats, invented
+11 test files (168 checks): dates, reminder plan, goal math, money ledger, M-Pesa reader, M-Pesa import/sorting,
+weekly report, backup/restore, Today (sun, voice, ONE thing), focus, pause, wait list, milestones, updates — run on a real SQLite database. M-Pesa test data is **fake** (real formats, invented
 names and numbers). Details: [docs/TESTING.md](docs/TESTING.md)
 
 ## How this project is built
 
 - **Claude** (architect) designs features, writes and tests all code, and pushes it here. Each update has notes in `docs/tasks/`.
-- **GitHub Copilot** pulls the code onto Reuben's PC, runs the tests and builds the APK.
+- **GitHub** builds the APK automatically after every push and publishes it under Releases.
+- **GitHub Copilot** is only needed for work on Reuben's PC (`git pull`, running in Expo Go).
 - **Reuben** tests the app on his phone and decides what comes next.
 
 Details: [docs/WORKFLOW.md](docs/WORKFLOW.md)

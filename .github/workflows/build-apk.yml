@@ -1,0 +1,86 @@
+# Builds the installable Kesho app (APK) and publishes it under "Releases".
+# Runs by itself every time code is pushed to the main branch (changes to .md files only are skipped).
+# You can also start it by hand: GitHub > Actions > Build Android APK > Run workflow.
+#
+# Every APK is signed with the same key (the standard Expo template key), so each new
+# APK installs OVER the previous one and the data on the phone is kept.
+name: Build Android APK
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - '**.md'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: build-apk
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    defaults:
+      run:
+        working-directory: app
+    env:
+      BUILD_NUMBER: ${{ github.run_number }}
+      CI: '1'
+    steps:
+      - name: Get the code
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Install packages
+        run: npm ci
+
+      - name: Run the tests
+        run: npm test
+
+      - name: Generate the Android project
+        run: npx expo prebuild --platform android --no-install
+
+      - name: Build the APK
+        working-directory: app/android
+        run: ./gradlew assembleRelease -PreactNativeArchitectures=armeabi-v7a,arm64-v8a --no-daemon --stacktrace
+
+      - name: Collect the APK
+        run: |
+          mkdir -p out
+          cp android/app/build/outputs/apk/release/app-release.apk "out/kesho-1.0.${BUILD_NUMBER}.apk"
+          ls -la out
+
+      - name: Keep a copy on the workflow page
+        uses: actions/upload-artifact@v4
+        with:
+          name: kesho-1.0.${{ github.run_number }}
+          path: app/out/
+          retention-days: 30
+
+      - name: Publish under Releases
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "v1.0.${BUILD_NUMBER}" out/*.apk \
+            --title "Kesho 1.0.${BUILD_NUMBER}" \
+            --notes "**Phone:** download \`kesho-1.0.${BUILD_NUMBER}.apk\` and open it to install. It updates the older Kesho — your data is kept.
+
+          Kesho also tells you itself when a new version is here (banner at the top, and Me → Updates).
+
+          Built from commit ${GITHUB_SHA::7}."

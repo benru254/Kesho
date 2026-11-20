@@ -8,6 +8,7 @@ kesho/
 ├── README.md                         ← start here
 ├── .gitignore                        ← keeps private files and build junk out of GitHub
 ├── .github/copilot-instructions.md   ← rules Copilot follows in this project
+├── .github/workflows/build-apk.yml   ← builds the APK on every push, publishes it under Releases
 ├── tools/make_icons.py               ← draws the app icon + splash (python tools/make_icons.py)
 ├── docs/
 │   ├── STRUCTURE.md                  ← this file
@@ -18,8 +19,8 @@ kesho/
     ├── App.js                        ← 1 line: hands over to src/App.js. Don't touch.
     ├── package.json                  ← packages + "npm test"
     ├── app.json                      ← name, Android package com.kesho.app, EAS project id (edited by EAS)
-    ├── app.config.js                 ← icon, adaptive icon, splash (added on top of app.json)
-    ├── eas.json                      ← how the APK is built (profile "preview" = APK)
+    ├── app.config.js                 ← version 1.0.N + versionCode N (from the GitHub build), icon, splash
+    ├── eas.json                      ← old EAS build settings (not used any more — GitHub builds the APK)
     ├── assets/                       ← icon.png, adaptive-icon.png, adaptive-background.png, splash-icon.png
     ├── modules/kesho-sms/            ← native Android module (Kotlin): reads M-Pesa SMS
     ├── tests/                        ← automated tests — see docs/TESTING.md
@@ -64,6 +65,7 @@ kesho/
             ├── me/                   ← 🧭 My why: WhyForm, Onboarding (first run), MeSection
             ├── journey/              ← 🌅 lifetime totals + milestones: journey.calc.js (pure), service, section
             ├── celebrate/            ← CelebrationLayer (toasts, full-screen moments), Confetti
+            ├── update/               ← ⬆️ new version on GitHub? update.check.js (pure), service, banner, Me section
             ├── reminders/            ← 🔔 daily reminders (Me tab section)
             └── backup/               ← 💾 backup & restore (Me tab section + banner)
 ```
@@ -107,6 +109,7 @@ This is on purpose: Kesho works for a month with no internet.
 | `focus-finished` | FocusOverlay | Today (ticks the task if finished) |
 | `pause-open` | the ⏸ button in the tab bar | PauseOverlay |
 | `pause-closed` | PauseOverlay | Today |
+| `update-changed` | Update service after a check / "Later" | Update banner and section |
 | `profile-changed` | `core/profile.saveProfile` | Today, Me section |
 | `restored` | Backup after a restore | App shell (reload every screen), Backup |
 | `backup-changed` | Backup after backup / "Later" | Backup banner, section, reminder |

@@ -33,6 +33,9 @@ import { initReminders } from './reminders/reminders.service';
 import BackupSection from './backup/BackupSection';
 import BackupBanner from './backup/BackupBanner';
 import { initBackup } from './backup/backup.reminder';
+import UpdateSection from './update/UpdateSection';
+import UpdateBanner from './update/UpdateBanner';
+import { initUpdate } from './update/update.service';
 
 export const features = [
   { key: 'today', title: 'Today', icon: '☀️', Screen: TodayScreen },
@@ -44,6 +47,7 @@ export const features = [
   { key: 'focus', Overlay: FocusOverlay },
   { key: 'reminders', Section: RemindersSection, init: initReminders },
   { key: 'backup', Section: BackupSection, Banner: BackupBanner, init: initBackup },
+  { key: 'update', Section: UpdateSection, Banner: UpdateBanner, init: initUpdate },
   // Last, so celebrations are drawn above every other overlay:
   { key: 'celebrate', Overlay: CelebrationLayer },
 ];

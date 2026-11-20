@@ -9,7 +9,7 @@ cd C:\Users\reuben\Desktop\kesho\app
 npm test
 ```
 
-Must end with `10 passed, 0 failed, 0 skipped` (154 checks). If anything fails, **do not build** — report the output to Claude.
+Must end with `11 passed, 0 failed, 0 skipped` (168 checks). GitHub runs the same tests before every APK build. If anything fails, **do not build** — report the output to Claude.
 
 | File | What it proves |
 |---|---|
@@ -22,6 +22,7 @@ Must end with `10 passed, 0 failed, 0 skipped` (154 checks). If anything fails, 
 | `report.calc.test.js` | week stats, "missed twice", comparisons, patterns, focus |
 | `backup.test.js` | export → damage → restore = identical; bad files refused; reminder timing (real SQLite) |
 | `today.test.js` | sun progress (incl. low-energy days), sky, Kesho's voice, ONE thing, tomorrow's one thing, day number never resets (real SQLite) |
+| `update.test.js` | reading GitHub releases, newer-version check, max every 12 h, "Later", offline and "no release yet" (real SQLite) |
 | `alive.test.js` | focus timer (incl. app closed mid-session), Pause urges, 24h wait list, milestones once each, profile (real SQLite) |
 
 How it works: `tests/run.js` bundles each test with esbuild, swaps phone packages for `tests/stubs/`
@@ -34,6 +35,10 @@ structure with invented names, numbers and codes.
 ## 2. Phone checklist (after installing a new APK)
 
 Do the parts related to the update, plus the quick smoke test.
+
+**Updating (every update)**
+- [ ] The green "✨ Kesho 1.0.N is ready" strip appears (or Me → Updates → Check) → Get it → install over the old app
+- [ ] Me → Updates shows the new version; all data is still there
 
 **Smoke test (every update, 1 minute)**
 - [ ] App opens; tabs: Today, Money, ⏸ Pause (round, middle), Report, Me

@@ -13,7 +13,7 @@ Read `docs/WORKFLOW.md` and `docs/STRUCTURE.md` before any work in this reposito
 - Local: `C:\Users\reuben\Desktop\kesho` · GitHub: `https://github.com/benru254/Kesho` (branch `main`).
 - Never create kesho-partN, life-app or any copy. Every update is applied INSIDE this folder.
 - Old folders live in `C:\Users\reuben\Desktop\_kesho-archive`. Never use code from there.
-- Target: ANDROID ONLY — installed APK (EAS) and Expo Go for quick tests. Never run or fix for web.
+- Target: ANDROID ONLY — installed APK (built by GitHub Actions) and Expo Go for quick tests. Never run or fix for web.
 
 ## Getting an update
 - Start every session with `git pull` in `C:\Users\reuben\Desktop\kesho`. GitHub is the source of truth.
@@ -22,13 +22,13 @@ Read `docs/WORKFLOW.md` and `docs/STRUCTURE.md` before any work in this reposito
 - If an update document contains `### FILE` blocks (older style): replace the WHOLE file with the block.
 - `MOVE TO ARCHIVE: <path>` = Move-Item it to `_kesho-archive\removed\` (never hard-delete).
 
-## Before every build
-1. `cd app` → `npm test` → must end with `0 failed`.
-2. `npx expo export --platform android` → must finish without errors.
-3. Only then: `eas build -p android --profile preview`. Always reuse the existing keystore.
+## Builds
+- APKs are built by GitHub Actions (`.github/workflows/build-apk.yml`) on every push to `main`, and published
+  under Releases. Never run `eas build` — an EAS APK has a different signing key and can't update the installed app.
+- Before pushing code: `cd app` → `npm test` (must end with `0 failed`) → `npx expo export --platform android`.
 
 ## Git
-- Always `git pull` before work. Push only changes made on this PC (e.g. `app.json` after `eas`, `package-lock.json`):
+- Always `git pull` before work. Push only changes made on this PC (e.g. `package-lock.json`):
   `git add .` → `git commit -m "PC: <what>"` → `git push`. If the push is rejected: `git pull --rebase`, then push.
 - Before every push run `git status` and check that NO private file is staged:
   backups (`kesho-backup-*.json`), `*.db`, real SMS text, screenshots, keystores (`*.jks`, `*.keystore`),
@@ -42,7 +42,7 @@ Read `docs/WORKFLOW.md` and `docs/STRUCTURE.md` before any work in this reposito
 - Never write files with PowerShell (Set-Content, Out-File, echo >). Use the editor, UTF-8.
 - Never delete Reuben's folders or data. Archive with Move-Item.
 - Never fix app code on your own initiative. Report errors to Claude through Reuben.
-- Never edit `app/modules/kesho-sms/android/build.gradle` (it is in the repo since Update 04).
+- Never edit `app/modules/kesho-sms/android/build.gradle` or `.github/workflows/build-apk.yml`.
 - Never edit `app/app.config.js` or `app/assets/` — icons are made by `tools/make_icons.py`.
 
 ## Code rules (for reading — Claude writes the code)

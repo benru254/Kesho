@@ -28,4 +28,7 @@ Short records of choices that shape the app. If you want to change one, read the
 | 23 | **Settings became the 🧭 Me tab** | Your why and journey belong with you, not hidden in settings. Tab key stays `settings` so older notifications still open it. |
 | 24 | **Icon/splash in app.config.js, not app.json** | app.json is edited by EAS on the PC (project id); keeping our changes in a separate file avoids merge conflicts. |
 | 25 | **No extra animation or chart libraries** | Plain React Native Animated + expo-linear-gradient keeps the APK small and the build reliable. |
+| 26 | **APK built by GitHub Actions, published under Releases (like Njia)**, not EAS | No PC, no Copilot, no EAS queue needed for an update: push → APK in ~15 min. Kesho checks Releases itself and offers the update. |
+| 27 | **Signed with Expo's standard template key** | The same key every build, so updates install over the old app and data stays. The key is public; acceptable for a hand-installed personal app. A Play Store release would need a secret key. |
+| 28 | **Update check at most every 12 h, only reads GitHub** | Kesho stays offline-first; the check sends nothing about you, just asks "what is the newest version?" |
 | 19 | **Expo SDK 54** | The version Copilot's working setup used; matches Expo Go on the Play Store at the time. Upgrade only on purpose. |

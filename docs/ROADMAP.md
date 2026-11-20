@@ -11,6 +11,7 @@ Design rule: built for the lazy, emotional Reuben — the productive Reuben does
 - [x] Update 01 — Installable APK (EAS)
 - [x] Update 02 — M-Pesa SMS auto-read (till = business, sorting, suggestions, fees, real balance)
 - [x] Update 03 — Backup/restore (Google Drive), weekly report, Settings tab, tests, docs, GitHub
+- [x] Update 05 — APK built by GitHub on every push; Kesho offers its own updates
 - [x] Update 04 — Kesho comes alive: living sky, My why, ONE thing, Pause, Focus, 24h wait list, milestones, celebrations, icon
 
 ## Next (suggested order)

@@ -50,6 +50,7 @@ for (const file of tests) {
         expo: path.join(STUBS, 'expo.js'),
         'expo-notifications': path.join(STUBS, 'expo-notifications.js'),
         'expo-haptics': path.join(STUBS, 'expo-haptics.js'),
+        'expo-application': path.join(STUBS, 'expo-application.js'),
       },
     });
   } catch (e) {
